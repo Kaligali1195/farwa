@@ -83,6 +83,11 @@ Keep Netlify upload sizes small; the whole request body must fit within Netlify'
 
 If Netlify shows a file-system error like `mkdir '/var/task/netlify/functions/data'`, redeploy the latest code and confirm `MONGODB_URI` is set in **Site configuration > Environment variables**. The app now avoids writing inside Netlify's read-only function folder, but MongoDB is still required for permanent deployed inventory and images.
 
+If the deployed admin page says **MongoDB not connected**, check both places:
+
+- Netlify: `MONGODB_URI`, `MONGODB_DATABASE`, and `MONGODB_COLLECTION` must be set in environment variables.
+- MongoDB Atlas: **Network Access** must allow Netlify to connect. For Netlify, use `0.0.0.0/0` if you do not have a fixed outbound IP.
+
 ## Deploy on Render
 
 Render can use the included Dockerfile and `render.yaml`.

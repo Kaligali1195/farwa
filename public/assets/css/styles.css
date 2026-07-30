@@ -876,6 +876,18 @@ button {
     font-weight: 850;
 }
 
+.connected-pill {
+    color: var(--sage-dark);
+    background: var(--panel);
+    border-color: var(--line);
+}
+
+.warning-pill {
+    color: var(--danger);
+    background: #f8e1de;
+    border-color: #edc2bc;
+}
+
 .alert {
     margin: 16px 0;
     padding: 14px 16px;

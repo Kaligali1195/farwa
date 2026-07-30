@@ -43,6 +43,7 @@ const maxTotalUploadBytes = megabytesToBytes(process.env.MAX_TOTAL_UPLOAD_MB || 
 const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 let mongoClientPromise = null;
+let lastMongoError = '';
 
 app.disable('x-powered-by');
 app.use(express.urlencoded({ extended: false }));
@@ -152,6 +153,7 @@ function sortProducts(products) {
 
 async function getDb() {
   if (!config.mongoUri) {
+    lastMongoError = 'MONGODB_URI is missing.';
     return null;
   }
 
@@ -166,15 +168,43 @@ async function getDb() {
 
   try {
     const client = await mongoClientPromise;
+    lastMongoError = '';
     return client.db(config.mongoDatabase);
   } catch (error) {
+    lastMongoError = mongoErrorSummary(error);
     return null;
   }
 }
 
-async function storageLabel() {
+function mongoErrorSummary(error) {
+  const firstLine = String(error?.message || error || 'Unknown MongoDB error.').split('\n')[0];
+  return `${error?.name || 'MongoDBError'}: ${firstLine}`;
+}
+
+async function storageInfo() {
   const db = await getDb();
-  return db ? 'MongoDB connected' : isNetlifyRuntime ? 'Temporary Netlify fallback' : 'Local JSON fallback';
+  if (db) {
+    return {
+      connected: true,
+      label: 'MongoDB connected',
+      message: '',
+    };
+  }
+
+  if (isNetlifyRuntime) {
+    return {
+      connected: false,
+      label: 'MongoDB not connected',
+      message:
+        'Netlify uploads require MongoDB. Check Netlify environment variables and MongoDB Atlas Network Access, then redeploy.',
+    };
+  }
+
+  return {
+    connected: false,
+    label: 'Local JSON fallback',
+    message: lastMongoError || 'MongoDB is not configured locally.',
+  };
 }
 
 function readProductsFromJson() {
@@ -213,7 +243,11 @@ async function readProductsFromMongo() {
 
 async function readProducts() {
   const mongoProducts = await readProductsFromMongo();
-  return Array.isArray(mongoProducts) ? mongoProducts : readProductsFromJson();
+  if (Array.isArray(mongoProducts)) {
+    return mongoProducts;
+  }
+
+  return isNetlifyRuntime ? [] : readProductsFromJson();
 }
 
 function inventoryStats(products) {
@@ -304,6 +338,10 @@ async function saveImages(files, productId) {
       imageIds,
       images: imageIds.map((id) => `/image/${id}`),
     };
+  }
+
+  if (isNetlifyRuntime) {
+    throw new Error('MongoDB is not connected. Check Netlify environment variables and MongoDB Atlas Network Access.');
   }
 
   ensureStorage();
@@ -749,7 +787,8 @@ function loginPageHtml(error = '') {
 async function adminPageHtml({ error = '', flash = '' } = {}) {
   const products = await readProducts();
   const stats = inventoryStats(products);
-  const label = await storageLabel();
+  const storage = await storageInfo();
+  const storageWarning = storage.connected ? '' : storage.message;
 
   return adminLayout({
     title: 'Owner Admin',
@@ -760,10 +799,11 @@ async function adminPageHtml({ error = '', flash = '' } = {}) {
             <p class="eyebrow">Admin</p>
             <h1>Inventory dashboard</h1>
           </div>
-          <span class="storage-pill">${escapeHtml(label)}</span>
+          <span class="storage-pill ${storage.connected ? 'connected-pill' : 'warning-pill'}">${escapeHtml(storage.label)}</span>
         </div>
         ${flash ? `<div class="alert success-alert">${escapeHtml(flash)}</div>` : ''}
         ${error ? `<div class="alert error-alert">${escapeHtml(error)}</div>` : ''}
+        ${storageWarning ? `<div class="alert error-alert">${escapeHtml(storageWarning)}</div>` : ''}
         <div class="stat-grid" aria-label="Inventory summary">
           <article class="stat-card"><span>Items</span><strong>${stats.items}</strong></article>
           <article class="stat-card"><span>Pieces</span><strong>${stats.quantity}</strong></article>
