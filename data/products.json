@@ -1,0 +1,15 @@
+[
+    {
+        "id": "item_ef0c26bfd3624e5c",
+        "title": "Best Clothes",
+        "images": [
+            "uploads/item-20260730-185913-0a11234f23ea.jpg",
+            "uploads/item-20260730-185913-ef8847b8a6d7.jpg",
+            "uploads/item-20260730-185913-3a6a4508824a.jpg",
+            "uploads/item-20260730-185913-ba35b6c6e190.jpg"
+        ],
+        "price": 2000,
+        "quantity": 2,
+        "created_at": "2026-07-30T18:59:13+00:00"
+    }
+]

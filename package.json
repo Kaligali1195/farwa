@@ -1,0 +1,21 @@
+{
+  "name": "farwa-undergarments",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Farwa Undergarments catalogue with Node.js server, MongoDB, admin uploads, and static HTML/CSS assets.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.19.2",
+    "mongodb": "^6.9.0",
+    "multer": "^2.2.0",
+    "serverless-http": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

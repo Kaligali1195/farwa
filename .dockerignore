@@ -1,0 +1,6 @@
+.git
+.env
+preview-desktop.png
+preview-mobile.png
+*.log
+node_modules

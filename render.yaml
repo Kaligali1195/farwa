@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: farwa-undergarments
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: farwa_undergarments
+      - key: MONGODB_COLLECTION
+        value: items
+      - key: ADMIN_USERNAME
+        value: owner
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: MAX_IMAGE_MB
+        value: "5"
+      - key: MAX_TOTAL_UPLOAD_MB
+        value: "25"
+      - key: STORE_NAME
+        value: Farwa Undergarments
+      - key: CONTACT_PRIMARY
+        value: 0316-8484140
+      - key: CONTACT_SECONDARY
+        value: 0306-8581299
+      - key: STORE_ADDRESS
+        value: Milli Shopping Mall, Resham Galli, Mohni Bazaar, NawabShah
+    disk:
+      name: farwa-uploads
+      mountPath: /app/public/uploads
+      sizeGB: 1
